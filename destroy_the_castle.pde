@@ -45,6 +45,9 @@ PImage logo;
 
 String[] soundFileNames = {"squeak.mp3"};
 
+PImage sword;
+float swordAnimProgress = 0;
+
 void setup(){
   castleImgs = new PImage[CASTLE_IMG_COUNT];
   font = createFont("OpenSans-Cond.ttf",48);
@@ -52,6 +55,7 @@ void setup(){
   bg = loadImage("bg.png");
   bg.resize(1280,720);
   logo = loadImage("logo.png");
+  sword = loadImage("items/sword.png");
   sfx = new SoundFile[soundFileNames.length];
   for(int s = 0; s < soundFileNames.length; s++){
     sfx[s] = new SoundFile(this, soundFileNames[s]);
@@ -71,6 +75,7 @@ void draw(){
   drawShopKeeper();
   drawText();
   showIntro();
+  drawSwordIntro();
   println("FPS: "+int(frameRate));
 }
 
@@ -88,6 +93,8 @@ void drawBackground(){
   fill(50, 168, 82);
   rect(W_W/2,W_H+150,W_W,W_H);
   fill(0);
+  text("Score: "+score,22,100);
+  fill(255);
   text("Score: "+score,20,100);
 }
 
@@ -171,6 +178,20 @@ void keyPressed(){
     startIntro = false;
     showWeedMan = true;
     canBeClicked = false;
+  }
+}
+
+void drawSwordIntro(){
+  // This is so stupid i had to find a whole other way to get this anim to work.
+  if(sentenceIndex == 4){
+    swordAnimProgress += 0.01;
+    swordAnimProgress = constrain(swordAnimProgress,0,1);
+    float x = cosInter(-1,500,swordAnimProgress);
+    thisS += 6;
+    float toBob = 100*sin(radians(thisS*-1.5))*0.1;
+    image(sword,900,x,200+toBob,200+toBob);
+  }else{
+    swordAnimProgress = 0;
   }
 }
 
