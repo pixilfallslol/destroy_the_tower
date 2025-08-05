@@ -13,6 +13,10 @@ int hitCount = 0;
 int CASTLE_HIT_COUNT_LIM = 10;
 int CASTLE_IMG_COUNT = 2;
 int thisS = 0;
+boolean castleClicked = false;
+int toStretch = 0;
+boolean castleCanBeClicked = false;
+PImage curImg;
 
 int score = 0;
 
@@ -27,7 +31,7 @@ int xStretch = 0;
 
 int frames = 0;
 
-String[] sentences = {"Hi","Im Weed Man im gonna help you learn the ropes","Over there is the tower","You have to destroy that tower","'How?' you ask well with this very weapon"};
+String[] sentences = {"Hi","Im Weed Man im gonna help you learn the ropes","Over there is the tower","You have to destroy that tower","'How?' you ask well with this very weapon","Your mouse should now be the sword","Try to click the castle!","See easy now do it again!","See how your score goes up as you click","Try clicking a few more times!","You broke the tower!","You should know what to do from here!"};
 int sentenceIndex = 0;
 String curSentence = sentences[0];
 boolean nextSentece = false;
@@ -76,14 +80,37 @@ void draw(){
   drawText();
   showIntro();
   drawSwordIntro();
+  drawSword();
   println("FPS: "+int(frameRate));
 }
 
 void drawCastle(){
-  thisS += 6;
-  float toBob = 100*sin(radians(thisS*-1.5))*0.1;
+  curImg = castleImgs[0];
+  if(score >= 10){
+    curImg = castleImgs[1];
+    if(sentenceIndex < 10){
+      sentenceIndex = 10;
+      curSentence = sentences[sentenceIndex];
+    }
+  }
+  if(score == 1){
+    if(sentenceIndex < 7){
+      sentenceIndex = 7;
+      curSentence = sentences[sentenceIndex];
+    }
+  }
+  if(score == 2){
+    if(sentenceIndex < 8){
+      sentenceIndex = 8;
+      curSentence = sentences[sentenceIndex];
+    }
+  }
+  if(sentenceIndex == 8){
+    castleCanBeClicked = false;
+  }
+  toStretch *= 0.9;
   imageMode(CENTER);
-  image(castleImgs[0],W_W/2,W_H/2,CASTLE_SIZE+toBob,CASTLE_SIZE+toBob);
+  image(curImg,W_W/2,W_H/2,CASTLE_SIZE+toStretch,CASTLE_SIZE);
 }
 
 void drawBackground(){
@@ -167,10 +194,21 @@ void mousePressed(){
       sfx[0].play();
     }
   }
+  if(castleCanBeClicked){
+    if(dist(mouseX,mouseY,W_W/2,W_H/2) < 100){
+       castleClicked = true;
+       toStretch += 35;
+       println("Clicked");
+       sfx[0].play();
+       hitCount += 1;
+       score += 1;
+    }
+  }
 }
 
 void mouseReleased(){
   weedManClicked = false;
+  castleClicked = false;
 }
 
 void keyPressed(){
@@ -192,6 +230,15 @@ void drawSwordIntro(){
     image(sword,900,x,200+toBob,200+toBob);
   }else{
     swordAnimProgress = 0;
+  }
+}
+
+void drawSword(){
+  if(sentenceIndex >= 5){
+    image(sword,mouseX,mouseY,200,200);
+    castleCanBeClicked = true;
+  }else{
+    castleCanBeClicked = false;
   }
 }
 
