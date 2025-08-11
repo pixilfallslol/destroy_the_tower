@@ -61,9 +61,13 @@ boolean showContinueBtn = true;
 boolean drawShop = false;
 PImage shopIcon;
 PImage shopBg;
+boolean bought = false;
 
 boolean showArrow = false;
 PImage arrow;
+
+PImage hammer;
+boolean isHammer = true;
 
 void setup(){
   castleImgs = new PImage[CASTLE_IMG_COUNT];
@@ -82,10 +86,14 @@ void setup(){
   }
   for(int i = 0; i < SHOP_IMAGE_COUNT; i++){
     shopImgs[i] = loadImage("anims/shop/"+i+".png");
+    shopImgs[i].resize(400,450);
   }
   shopIcon = loadImage("shopico.png");
   shopBg = loadImage("aleey.jpg");
-  frameRate(9999);
+  hammer = loadImage("items/hammer.png");
+  hammer.resize(100,100);
+  shopBg.resize(1280,720);
+  frameRate(60);
   size(1280,720);
 }
 
@@ -99,6 +107,7 @@ void draw(){
   showIntro();
   drawSwordIntro();
   drawSword();
+  drawHammer();
   if(drawShop){
     drawShop();
   }
@@ -268,6 +277,12 @@ void mousePressed(){
     drawShop();
     println("Clicked");
   }
+  if(dist(mouseX,mouseY,960,170) < 100 && score >= 30){
+    println("bought!");
+    bought = true;
+  }else{
+    println("gotta get more bud");
+  }
 }
 
 void mouseReleased(){
@@ -311,11 +326,30 @@ void drawSword(){
 
 void drawShop(){
   if(drawShop){
-    image(shopBg,width/2,height/2,width,height);
+    image(shopBg,width/2,height/2);
     int currentIndex = (frames/SPEED)%SHOP_IMAGE_COUNT;
     imageMode(CENTER);
-    image(shopImgs[currentIndex],300,500,400,450);
+    image(shopImgs[currentIndex],300,500);
+    fill(0);
+    text("Score: "+score,22,100);
+    fill(255);
+    text("Score: "+score,20,100);
+    fill(0);
+    text("Hammer",902,250);
+    fill(255);
+    text("Hammer",900,250);
+    image(hammer,960,170,100,100);
   }
+}
+
+void drawHammer(){
+  if(bought){
+    isHammer = true;
+    image(hammer,mouseX,mouseY);
+  }
+}
+
+void drawPointer(){
 }
 
 float cosInter(float a, float b, float x) {
