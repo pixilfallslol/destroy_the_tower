@@ -11,7 +11,7 @@ PImage[] castleImgs;
 int CASTLE_SIZE = 400;
 int hitCount = 0;
 int CASTLE_HIT_COUNT_LIM = 10;
-int CASTLE_IMG_COUNT = 3;
+int CASTLE_IMG_COUNT = 4;
 int thisS = 0;
 boolean castleClicked = false;
 int toStretch = 0;
@@ -28,10 +28,13 @@ boolean showWeedMan = false;
 boolean weedManClicked = false;
 boolean canBeClicked = true;
 int xStretch = 0;
+int SHOP_IMAGE_COUNT = 5;
+PImage[] shopImgs = new PImage[SHOP_IMAGE_COUNT];
+int SPEED = 4; // higher = slower
 
 int frames = 0;
 
-String[] sentences = {"Hi","Im Weed Man im gonna help you learn the ropes","Over there is the tower","You have to destroy that tower","'How?' you ask well with this very weapon","Your mouse should now be the sword","Try to click the castle!","See easy now do it again!","See how your score goes up as you click","Try clicking a few more times!","You broke the tower!","You should know what to do from here!"};
+String[] sentences = {"Hi","Im Weed Man im gonna help you learn the ropes","Over there is the tower","You have to destroy that tower","'How?' you ask well with this very weapon","Your mouse should now be the sword","Try to click the castle!","See easy now do it again!","See how your score goes up as you click","Try clicking a few more times!","You broke the tower!","You should know what to do from here!","You did it!","You're score should be 30","You can use that to buy more weapons!"};
 int sentenceIndex = 0;
 String curSentence = sentences[0];
 boolean nextSentece = false;
@@ -54,6 +57,8 @@ float swordAnimProgress = 0;
 
 boolean showContinueBtn = true;
 
+boolean drawShop = false;
+
 void setup(){
   castleImgs = new PImage[CASTLE_IMG_COUNT];
   font = createFont("OpenSans-Cond.ttf",48);
@@ -68,6 +73,9 @@ void setup(){
   }
   for(int i = 0; i < CASTLE_IMG_COUNT; i++){
     castleImgs[i] = loadImage("towers/castle/imgs/"+i+".png");
+  }
+  for(int i = 0; i < SHOP_IMAGE_COUNT; i++){
+    shopImgs[i] = loadImage("anims/shop/"+i+".png");
   }
   frameRate(9999);
   size(1280,720);
@@ -97,6 +105,14 @@ void drawCastle(){
   }
   if(score >= CASTLE_HIT_COUNT_LIM+10){
     curImg = castleImgs[2];
+  }
+  if(score >= CASTLE_HIT_COUNT_LIM+20 && sentenceIndex < 12){
+    curImg = castleImgs[3];
+    castleCanBeClicked = false;
+    sentenceIndex = 12;
+    curSentence = sentences[sentenceIndex];
+    showContinueBtn = true;
+    showWeedMan = true;
   }
   if(score == 1){
     if(sentenceIndex < 7){
@@ -129,9 +145,6 @@ void drawCastle(){
   }
   if(score == 12){
     showWeedMan = false;
-  }
-  if(sentenceIndex >= 8){
-    castleCanBeClicked = false;
   }
   toStretch *= 0.9;
   imageMode(CENTER);
@@ -261,11 +274,19 @@ void drawSwordIntro(){
 }
 
 void drawSword(){
-  if(sentenceIndex >= 5){
+  if(sentenceIndex >= 5 && score < CASTLE_HIT_COUNT_LIM+20){
     image(sword,mouseX,mouseY,200,200);
     castleCanBeClicked = true;
   }else{
     castleCanBeClicked = false;
+  }
+}
+
+void drawShop(){
+  if(drawShop){
+    int currentIndex = (frames/SPEED)%SHOP_IMAGE_COUNT;
+    imageMode(CENTER);
+    image(shopImgs[currentIndex],width/2,height/2);
   }
 }
 
