@@ -17,6 +17,7 @@ boolean castleClicked = false;
 int toStretch = 0;
 boolean castleCanBeClicked = false;
 PImage curImg;
+boolean castleDestroyed = false;
 
 int score = 0;
 
@@ -28,9 +29,9 @@ boolean showWeedMan = false;
 boolean weedManClicked = false;
 boolean canBeClicked = true;
 int xStretch = 0;
-int SHOP_IMAGE_COUNT = 5;
+int SHOP_IMAGE_COUNT = 4;
 PImage[] shopImgs = new PImage[SHOP_IMAGE_COUNT];
-int SPEED = 4; // higher = slower
+int SPEED = 3; // higher = slower
 
 int frames = 0;
 
@@ -58,6 +59,11 @@ float swordAnimProgress = 0;
 boolean showContinueBtn = true;
 
 boolean drawShop = false;
+PImage shopIcon;
+PImage shopBg;
+
+boolean showArrow = false;
+PImage arrow;
 
 void setup(){
   castleImgs = new PImage[CASTLE_IMG_COUNT];
@@ -77,6 +83,8 @@ void setup(){
   for(int i = 0; i < SHOP_IMAGE_COUNT; i++){
     shopImgs[i] = loadImage("anims/shop/"+i+".png");
   }
+  shopIcon = loadImage("shopico.png");
+  shopBg = loadImage("aleey.jpg");
   frameRate(9999);
   size(1280,720);
 }
@@ -91,28 +99,39 @@ void draw(){
   showIntro();
   drawSwordIntro();
   drawSword();
+  if(drawShop){
+    drawShop();
+  }
   println("FPS: "+int(frameRate));
 }
 
 void drawCastle(){
-  curImg = castleImgs[0];
-  if(score >= CASTLE_HIT_COUNT_LIM){
-    curImg = castleImgs[1];
-    if(sentenceIndex < 10){
-      sentenceIndex = 10;
-      curSentence = sentences[sentenceIndex];
-    }
-  }
-  if(score >= CASTLE_HIT_COUNT_LIM+10){
-    curImg = castleImgs[2];
-  }
-  if(score >= CASTLE_HIT_COUNT_LIM+20 && sentenceIndex < 12){
+  image(shopIcon,1200,100,100,90);
+  if(castleDestroyed){
     curImg = castleImgs[3];
-    castleCanBeClicked = false;
-    sentenceIndex = 12;
-    curSentence = sentences[sentenceIndex];
-    showContinueBtn = true;
-    showWeedMan = true;
+  }else{
+    curImg = castleImgs[0];
+    if(score >= CASTLE_HIT_COUNT_LIM){
+      curImg = castleImgs[1];
+      if(sentenceIndex < 10){
+        sentenceIndex = 10;
+        curSentence = sentences[sentenceIndex];
+      }
+    }
+    if(score >= CASTLE_HIT_COUNT_LIM+10){
+      curImg = castleImgs[2];
+    }
+    if(score >= CASTLE_HIT_COUNT_LIM+20){
+      curImg = castleImgs[3];
+      castleDestroyed = true;
+      castleCanBeClicked = false;
+      if(sentenceIndex <= 12){
+        sentenceIndex = 12;
+        curSentence = sentences[sentenceIndex];
+      }
+      showContinueBtn = true;
+      showWeedMan = true;
+    }
   }
   if(score == 1){
     if(sentenceIndex < 7){
@@ -148,7 +167,7 @@ void drawCastle(){
   }
   toStretch *= 0.9;
   imageMode(CENTER);
-  image(curImg,W_W/2,W_H/2,CASTLE_SIZE+toStretch,CASTLE_SIZE);
+  image(curImg, W_W/2, W_H/2, CASTLE_SIZE+toStretch, CASTLE_SIZE);
 }
 
 void drawBackground(){
@@ -244,6 +263,11 @@ void mousePressed(){
        score += 1;
     }
   }
+  if(dist(mouseX,mouseY,1200,100) < 100){
+    drawShop = true;
+    drawShop();
+    println("Clicked");
+  }
 }
 
 void mouseReleased(){
@@ -256,6 +280,9 @@ void keyPressed(){
     startIntro = false;
     showWeedMan = true;
     canBeClicked = false;
+  }
+  if(key == 'q'){
+    drawShop = false;
   }
 }
 
@@ -284,9 +311,10 @@ void drawSword(){
 
 void drawShop(){
   if(drawShop){
+    image(shopBg,width/2,height/2,width,height);
     int currentIndex = (frames/SPEED)%SHOP_IMAGE_COUNT;
     imageMode(CENTER);
-    image(shopImgs[currentIndex],width/2,height/2);
+    image(shopImgs[currentIndex],300,500,400,450);
   }
 }
 
