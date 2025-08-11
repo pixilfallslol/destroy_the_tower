@@ -35,7 +35,7 @@ int SPEED = 3; // higher = slower
 
 int frames = 0;
 
-String[] sentences = {"Hi","Im Weed Man im gonna help you learn the ropes","Over there is the tower","You have to destroy that tower","'How?' you ask well with this very weapon","Your mouse should now be the sword","Try to click the castle!","See easy now do it again!","See how your score goes up as you click","Try clicking a few more times!","You broke the tower!","You should know what to do from here!","You did it!","You're score should be 30","You can use that to buy more weapons!"};
+String[] sentences = {"Hi","Im Weed Man im gonna help you learn the ropes","Over there is the tower","You have to destroy that tower","'How?' you ask well with this very weapon","Your mouse should now be the sword","Try to click the castle!","See easy now do it again!","See how your score goes up as you click","Try clicking a few more times!","You broke the tower!","You should know what to do from here!","You did it!","You're score should be 30","You can use that to buy more weapons!","Click the shop icon!","There you have a hammer lets go to the next level!"};
 int sentenceIndex = 0;
 String curSentence = sentences[0];
 boolean nextSentece = false;
@@ -91,8 +91,10 @@ void setup(){
   shopIcon = loadImage("shopico.png");
   shopBg = loadImage("aleey.jpg");
   hammer = loadImage("items/hammer.png");
+  arrow = loadImage("arrow.png");
   hammer.resize(100,100);
   shopBg.resize(1280,720);
+  arrow.resize(100,100);
   frameRate(60);
   size(1280,720);
 }
@@ -108,14 +110,16 @@ void draw(){
   drawSwordIntro();
   drawSword();
   drawHammer();
+  drawPointer();
   if(drawShop){
     drawShop();
   }
+  /*fill(255,0,0,cosInter(0,255,frames/frameRate));
+  rect(width/2,height/2,50,50);*/
   println("FPS: "+int(frameRate));
 }
 
 void drawCastle(){
-  image(shopIcon,1200,100,100,90);
   if(castleDestroyed){
     curImg = castleImgs[3];
   }else{
@@ -174,9 +178,20 @@ void drawCastle(){
   if(score == 12){
     showWeedMan = false;
   }
+  if(sentenceIndex >= 15){
+    showArrow = true;
+    showContinueBtn = false;
+  }
+  if(bought){
+    showArrow = false;
+    score = 0;
+    sentenceIndex = 16;
+    curSentence = sentences[sentenceIndex];
+    showContinueBtn = true;
+  }
   toStretch *= 0.9;
   imageMode(CENTER);
-  image(curImg, W_W/2, W_H/2, CASTLE_SIZE+toStretch, CASTLE_SIZE);
+  image(curImg,W_W/2,W_H/2,CASTLE_SIZE+toStretch,CASTLE_SIZE);
 }
 
 void drawBackground(){
@@ -189,6 +204,7 @@ void drawBackground(){
   text("Score: "+score,22,100);
   fill(255);
   text("Score: "+score,20,100);
+  image(shopIcon,1200,100,100,90);
 }
 
 void drawShopKeeper(){
@@ -316,7 +332,7 @@ void drawSwordIntro(){
 }
 
 void drawSword(){
-  if(sentenceIndex >= 5 && score < CASTLE_HIT_COUNT_LIM+20){
+  if(!bought && sentenceIndex >= 5 && score < CASTLE_HIT_COUNT_LIM+20){
     image(sword,mouseX,mouseY,200,200);
     castleCanBeClicked = true;
   }else{
@@ -338,7 +354,7 @@ void drawShop(){
     text("Hammer",902,250);
     fill(255);
     text("Hammer",900,250);
-    image(hammer,960,170,100,100);
+    image(hammer,960,170);
   }
 }
 
@@ -350,6 +366,11 @@ void drawHammer(){
 }
 
 void drawPointer(){
+  if(showArrow){
+    weedManStretch += 6;
+    float toBob = 100*sin(radians(weedManStretch*-1.5))*0.1;
+    image(arrow,1200,200+toBob);
+  }
 }
 
 float cosInter(float a, float b, float x) {
