@@ -11,7 +11,7 @@ PImage[] castleImgs;
 int CASTLE_SIZE = 400;
 int hitCount = 0;
 int CASTLE_HIT_COUNT_LIM = 10;
-int CASTLE_IMG_COUNT = 2;
+int CASTLE_IMG_COUNT = 3;
 int thisS = 0;
 boolean castleClicked = false;
 int toStretch = 0;
@@ -52,6 +52,8 @@ String[] soundFileNames = {"squeak.mp3"};
 PImage sword;
 float swordAnimProgress = 0;
 
+boolean showContinueBtn = true;
+
 void setup(){
   castleImgs = new PImage[CASTLE_IMG_COUNT];
   font = createFont("OpenSans-Cond.ttf",48);
@@ -86,12 +88,15 @@ void draw(){
 
 void drawCastle(){
   curImg = castleImgs[0];
-  if(score >= 10){
+  if(score >= CASTLE_HIT_COUNT_LIM){
     curImg = castleImgs[1];
     if(sentenceIndex < 10){
       sentenceIndex = 10;
       curSentence = sentences[sentenceIndex];
     }
+  }
+  if(score >= CASTLE_HIT_COUNT_LIM+10){
+    curImg = castleImgs[2];
   }
   if(score == 1){
     if(sentenceIndex < 7){
@@ -105,7 +110,27 @@ void drawCastle(){
       curSentence = sentences[sentenceIndex];
     }
   }
-  if(sentenceIndex == 8){
+  if(score == 3){
+    if(sentenceIndex < 9){
+      sentenceIndex = 9;
+      curSentence = sentences[sentenceIndex];
+      showContinueBtn = false;
+    }
+  }
+  if(sentenceIndex == 10){
+    showContinueBtn = true;
+  }
+  if(score == 11){
+    if(sentenceIndex < 11){
+      sentenceIndex = 11;
+      curSentence = sentences[sentenceIndex];
+      showContinueBtn = false;
+    }
+  }
+  if(score == 12){
+    showWeedMan = false;
+  }
+  if(sentenceIndex >= 8){
     castleCanBeClicked = false;
   }
   toStretch *= 0.9;
@@ -163,10 +188,12 @@ void drawText(){
       nextSentece = false;
     }
   }
-  fill(0);
-  text("Space to continue",1002,670);
-  fill(255);
-  text("Space to continue",1000,670);
+  if(showContinueBtn){
+    fill(0);
+    text("Space to continue",1002,670);
+    fill(255);
+    text("Space to continue",1000,670);
+  }
 }
 
 void showIntro(){
