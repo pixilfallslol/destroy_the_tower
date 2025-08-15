@@ -35,7 +35,7 @@ int SPEED = 3; // higher = slower
 
 int frames = 0;
 
-String[] sentences = {"Hi","Im Weed Man im gonna help you learn the ropes","Over there is the tower","You have to destroy that tower","'How?' you ask well with this very weapon","Your mouse should now be the sword","Try to click the castle!","See easy now do it again!","See how your score goes up as you click","Try clicking a few more times!","You broke the tower!","You should know what to do from here!","You did it!","You're score should be 30","You can use that to buy more weapons!","Click the shop icon!","There you have a hammer lets go to the next level!"};
+String[] sentences = {"Hi","Im Weed Man im gonna help you learn the ropes","Over there is the tower","You have to destroy that tower","'How?' you ask well with this very weapon","Your mouse should now be the sword","Try to click the castle!","See easy now do it again!","See how your score goes up as you click","Try clicking a few more times!","You broke the tower!","You should know what to do from here!","You did it!","You're score should be 30","You can use that to buy more weapons!","Click the shop icon!","There you have a hammer lets go to the next level!","Well you should know what to do"};
 int sentenceIndex = 0;
 String curSentence = sentences[0];
 boolean nextSentece = false;
@@ -51,7 +51,7 @@ PImage bg;
 
 PImage logo;
 
-String[] soundFileNames = {"squeak.mp3"};
+String[] soundFileNames = {"squeak.mp3","date.mp3","shop.mp3","Anticipation.mp3"};
 
 PImage sword;
 float swordAnimProgress = 0;
@@ -68,6 +68,19 @@ PImage arrow;
 
 PImage hammer;
 boolean isHammer = true;
+
+PGraphics fade;
+boolean showFade = false;
+float fadeProgress = 0;
+float fadeDuration = 2.0;
+float fadeStartTime = 0;
+int dragFade = 0;
+boolean fadingOut = false;
+boolean fadingIn = false;
+float fadeHoldDuration = 2.0;
+float fadeHoldStart = 0;
+
+PImage loading;
 
 void setup(){
   castleImgs = new PImage[CASTLE_IMG_COUNT];
@@ -92,9 +105,12 @@ void setup(){
   shopBg = loadImage("aleey.jpg");
   hammer = loadImage("items/hammer.png");
   arrow = loadImage("arrow.png");
+  loading = loadImage("hight.png");
   hammer.resize(100,100);
   shopBg.resize(1280,720);
   arrow.resize(100,100);
+  fade = createGraphics(width,height);
+  handleMusic();
   frameRate(60);
   size(1280,720);
 }
@@ -111,11 +127,10 @@ void draw(){
   drawSword();
   drawHammer();
   drawPointer();
+  drawIntroFade();
   if(drawShop){
     drawShop();
   }
-  /*fill(255,0,0,cosInter(0,255,frames/frameRate));
-  rect(width/2,height/2,50,50);*/
   println("FPS: "+int(frameRate));
 }
 
@@ -178,11 +193,14 @@ void drawCastle(){
   if(score == 12){
     showWeedMan = false;
   }
-  if(sentenceIndex >= 15){
+  if(sentenceIndex >= 15 && !bought){
     showArrow = true;
     showContinueBtn = false;
   }
-  if(bought){
+  if(sentenceIndex == 16){
+    sfx[3].stop();
+  }
+  if(bought && sentenceIndex < 17){
     showArrow = false;
     score = 0;
     sentenceIndex = 16;
@@ -311,9 +329,13 @@ void keyPressed(){
     startIntro = false;
     showWeedMan = true;
     canBeClicked = false;
+    sfx[1].stop();
+    sfx[3].play();
+    sfx[3].loop();
   }
   if(key == 'q'){
     drawShop = false;
+    sfx[2].stop();
   }
 }
 
@@ -370,6 +392,79 @@ void drawPointer(){
     weedManStretch += 6;
     float toBob = 100*sin(radians(weedManStretch*-1.5))*0.1;
     image(arrow,1200,200+toBob);
+  }
+}
+
+void drawFade(PImage load){
+  if(showFade){
+    float now = millis()/1000.0;
+    if(fadingOut){
+      fadeProgress = (now-fadeStartTime)/fadeDuration;
+      fadeProgress = constrain(fadeProgress,0,1);
+      fade.beginDraw();
+      fade.background(0,cosInter(0,255,fadeProgress));
+      fade.endDraw();
+      image(fade,width/2,height/2);
+      if(fadeProgress >= 1){
+        fadingOut = false;
+        fadeHoldStart = now;
+        sentenceIndex = 17;
+        curSentence = sentences[sentenceIndex];
+      }
+    }else if(fadeHoldStart > 0 && (now-fadeHoldStart) >= fadeHoldDuration){
+      if(!fadingIn){
+        fadeStartTime = now;
+        fadingIn = true;
+      }
+      float fadeInProgress = (now-fadeStartTime)/fadeDuration;
+      fadeInProgress = constrain(fadeInProgress,0,1);
+      fade.beginDraw();
+      fade.background(0,cosInter(255,0,fadeInProgress));
+      fade.endDraw();
+      image(fade,width/2,height/2);
+      if(fadeInProgress >= 1){
+        showFade = false;
+        fadingIn = false;
+        fadeHoldStart = 0;
+      }
+    }else{
+      fade.beginDraw();
+      fade.background(0,255);
+      fade.endDraw();
+      image(fade,width/2,height/2);
+    }
+  }
+}
+
+void drawIntroFade(){
+  fade.beginDraw();
+  fade.background(255,cosInter(255,0,frames/frameRate));
+  fade.endDraw();
+  image(fade,width/2,height/2);
+}
+
+void startFade(){
+  fadeStartTime = millis()/1000.0;
+  fadeProgress = 0;
+  showFade = true;
+  fadingOut = true;
+  fadingIn = false;
+  fadeHoldStart = 0;
+  dragFade = 0;
+}
+
+void handleMusic(){
+  if(startIntro){
+    sfx[1].play();
+  }else{
+    sfx[1].stop();
+  }
+  if(drawShop){
+    if(!sfx[2].isPlaying()){
+      sfx[2].play();
+    }else{
+      sfx[2].stop();
+    }
   }
 }
 
