@@ -82,6 +82,10 @@ float fadeHoldStart = 0;
 
 PImage loading;
 
+boolean showDemoScreen = false;
+
+PImage textBox;
+
 void setup(){
   castleImgs = new PImage[CASTLE_IMG_COUNT];
   font = createFont("OpenSans-Cond.ttf",48);
@@ -90,6 +94,7 @@ void setup(){
   bg.resize(1280,720);
   logo = loadImage("logo.png");
   sword = loadImage("items/sword.png");
+  textBox = loadImage("box.png");
   sfx = new SoundFile[soundFileNames.length];
   for(int s = 0; s < soundFileNames.length; s++){
     sfx[s] = new SoundFile(this, soundFileNames[s]);
@@ -131,6 +136,7 @@ void draw(){
   if(drawShop){
     drawShop();
   }
+  drawDemoScreen();
   println("FPS: "+int(frameRate));
 }
 
@@ -197,15 +203,15 @@ void drawCastle(){
     showArrow = true;
     showContinueBtn = false;
   }
-  if(sentenceIndex == 16){
-    sfx[3].stop();
-  }
   if(bought && sentenceIndex < 17){
     showArrow = false;
     score = 0;
     sentenceIndex = 16;
     curSentence = sentences[sentenceIndex];
     showContinueBtn = true;
+  }
+  if(!showWeedMan){
+    showContinueBtn = false;
   }
   toStretch *= 0.9;
   imageMode(CENTER);
@@ -337,6 +343,9 @@ void keyPressed(){
     drawShop = false;
     sfx[2].stop();
   }
+  if(key == ' ' && sentenceIndex == 16){
+    showDemoScreen = true;
+  }
 }
 
 void drawSwordIntro(){
@@ -465,6 +474,16 @@ void handleMusic(){
     }else{
       sfx[2].stop();
     }
+  }
+}
+
+void drawDemoScreen(){
+  if(showDemoScreen){
+    background(0);
+    fill(255);
+    textAlign(CENTER);
+    text("Sorry this is the end of the demo TwT",width/2,height/2);
+    sfx[3].stop();
   }
 }
 
