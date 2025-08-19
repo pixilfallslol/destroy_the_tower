@@ -234,7 +234,7 @@ void drawBackground(){
 void drawShopKeeper(){
   if(showWeedMan){
     weedManStretch += 6;
-    float toBob = 100*sin(radians(weedManStretch*-1.5))*0.1;
+    float toBob = sin(frameCount * 0.05) * 6;
     image(weed,200,580+toBob,550+toBob,450);
   }
 }
@@ -281,7 +281,7 @@ void showIntro(){
   if(startIntro){
     background(bg);
     weedManStretch += 6;
-    float toBob = 100*sin(radians(weedManStretch*-1.5))*0.1;
+    float toBob = sin(frameCount * 0.5) * 6;
     float goTo = cosInter(1000,570,frames/frameRate);
     image(weed,200,goTo+toBob,550+toBob+xStretch,450);
     xStretch *= 0.9;
@@ -355,7 +355,7 @@ void drawSwordIntro(){
     swordAnimProgress = constrain(swordAnimProgress,0,1);
     float x = cosInter(-1,500,swordAnimProgress);
     thisS += 6;
-    float toBob = 100*sin(radians(thisS*-1.5))*0.1;
+    float toBob = sin(frameCount * 0.05) * 6;
     image(sword,900,x,200+toBob,200+toBob);
   }else{
     swordAnimProgress = 0;
@@ -399,7 +399,7 @@ void drawHammer(){
 void drawPointer(){
   if(showArrow){
     weedManStretch += 6;
-    float toBob = 100*sin(radians(weedManStretch*-1.5))*0.1;
+    float toBob = sin(frameCount * 0.1) * 6;
     image(arrow,1200,200+toBob);
   }
 }
