@@ -62,6 +62,7 @@ boolean drawShop = false;
 PImage shopIcon;
 PImage shopBg;
 boolean bought = false;
+String shopText = "Choose a weapon";
 
 boolean showArrow = false;
 PImage arrow;
@@ -86,9 +87,12 @@ boolean showDemoScreen = false;
 
 PImage textBox;
 
+PFont font2;
+
 void setup(){
   castleImgs = new PImage[CASTLE_IMG_COUNT];
   font = createFont("OpenSans-Cond.ttf",48);
+  font2 = loadFont("Helvetica-96.vlw");
   weed = loadImage("WEEDMAN.png");
   bg = loadImage("bg.png");
   bg.resize(1280,720);
@@ -210,9 +214,9 @@ void drawCastle(){
     curSentence = sentences[sentenceIndex];
     showContinueBtn = true;
   }
-  if(!showWeedMan){
+  /*if(!showWeedMan){
     showContinueBtn = false;
-  }
+  }*/
   toStretch *= 0.9;
   imageMode(CENTER);
   image(curImg,W_W/2,W_H/2,CASTLE_SIZE+toStretch,CASTLE_SIZE);
@@ -275,13 +279,16 @@ void drawText(){
     fill(255);
     text("Space to continue",1000,670);
   }
+  /*if(showWeedMan){
+    showContinueBtn = true;
+  }*/
 }
 
 void showIntro(){
   if(startIntro){
     background(bg);
     weedManStretch += 6;
-    float toBob = sin(frameCount * 0.5) * 6;
+    float toBob = 100*sin(radians(weedManStretch*-1.5))*0.1;
     float goTo = cosInter(1000,570,frames/frameRate);
     image(weed,200,goTo+toBob,550+toBob+xStretch,450);
     xStretch *= 0.9;
@@ -373,19 +380,38 @@ void drawSword(){
 
 void drawShop(){
   if(drawShop){
+    float toBob = sin(frameCount * 0.05) * 0.1;
     image(shopBg,width/2,height/2);
+    fill(0,110);
+    rect(1500,300,1280,1000000);
     int currentIndex = (frames/SPEED)%SHOP_IMAGE_COUNT;
     imageMode(CENTER);
     image(shopImgs[currentIndex],300,500);
     fill(0);
-    text("Score: "+score,22,100);
+    text("Money: "+score+"$",22,100);
     fill(255);
-    text("Score: "+score,20,100);
+    text("Money: "+score+"$",20,100);
     fill(0);
-    text("Hammer",902,250);
+    text("Hammer 30$",902,250);
     fill(255);
-    text("Hammer",900,250);
+    text("Hammer 30$",900,250);
     image(hammer,960,170);
+    pushMatrix();
+    fill(255);
+    translate(1052,40);
+    rotate(toBob);
+    textAlign(CENTER,CENTER);
+    text(shopText,0,0);
+    translate(1050,40);
+    rotate(toBob);
+    textAlign(CENTER,CENTER);
+    text(shopText,0,0);
+    popMatrix();
+    if(dist(mouseX,mouseY,960,170) < 100){
+      shopText = "Hammer";
+    }else{
+      shopText = "Choose a weapon";
+    }
   }
 }
 
@@ -401,47 +427,6 @@ void drawPointer(){
     weedManStretch += 6;
     float toBob = sin(frameCount * 0.1) * 6;
     image(arrow,1200,200+toBob);
-  }
-}
-
-void drawFade(PImage load){
-  if(showFade){
-    float now = millis()/1000.0;
-    if(fadingOut){
-      fadeProgress = (now-fadeStartTime)/fadeDuration;
-      fadeProgress = constrain(fadeProgress,0,1);
-      fade.beginDraw();
-      fade.background(0,cosInter(0,255,fadeProgress));
-      fade.endDraw();
-      image(fade,width/2,height/2);
-      if(fadeProgress >= 1){
-        fadingOut = false;
-        fadeHoldStart = now;
-        sentenceIndex = 17;
-        curSentence = sentences[sentenceIndex];
-      }
-    }else if(fadeHoldStart > 0 && (now-fadeHoldStart) >= fadeHoldDuration){
-      if(!fadingIn){
-        fadeStartTime = now;
-        fadingIn = true;
-      }
-      float fadeInProgress = (now-fadeStartTime)/fadeDuration;
-      fadeInProgress = constrain(fadeInProgress,0,1);
-      fade.beginDraw();
-      fade.background(0,cosInter(255,0,fadeInProgress));
-      fade.endDraw();
-      image(fade,width/2,height/2);
-      if(fadeInProgress >= 1){
-        showFade = false;
-        fadingIn = false;
-        fadeHoldStart = 0;
-      }
-    }else{
-      fade.beginDraw();
-      fade.background(0,255);
-      fade.endDraw();
-      image(fade,width/2,height/2);
-    }
   }
 }
 
