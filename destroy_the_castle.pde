@@ -46,6 +46,7 @@ String[] characs = {"Weed Man"};
 
 boolean startIntro = true;
 boolean startPlaying = false;
+boolean startClicked = false;
 
 PImage bg;
 
@@ -145,6 +146,41 @@ void draw(){
 }
 
 void drawCastle(){
+  switch(score){
+    case 1:
+      if(sentenceIndex < 7){
+        sentenceIndex = 7;
+        curSentence = sentences[sentenceIndex];
+    }
+    break;
+    
+    case 2:
+      if(sentenceIndex < 8){
+        sentenceIndex = 8;
+        curSentence = sentences[sentenceIndex];
+    }
+    break;
+    
+    case 3:
+      if(sentenceIndex < 9){
+        sentenceIndex = 9;
+        curSentence = sentences[sentenceIndex];
+        showContinueBtn = false;
+    }
+    break;
+    
+    case 11:
+      if(sentenceIndex < 11){
+        sentenceIndex = 11;
+        curSentence = sentences[sentenceIndex];
+        showContinueBtn = false;
+    }
+    break;
+    
+    case 12:
+      showWeedMan = false;
+      break;
+  }
   if(castleDestroyed){
     curImg = castleImgs[3];
   }else{
@@ -171,37 +207,8 @@ void drawCastle(){
       showWeedMan = true;
     }
   }
-  if(score == 1){
-    if(sentenceIndex < 7){
-      sentenceIndex = 7;
-      curSentence = sentences[sentenceIndex];
-    }
-  }
-  if(score == 2){
-    if(sentenceIndex < 8){
-      sentenceIndex = 8;
-      curSentence = sentences[sentenceIndex];
-    }
-  }
-  if(score == 3){
-    if(sentenceIndex < 9){
-      sentenceIndex = 9;
-      curSentence = sentences[sentenceIndex];
-      showContinueBtn = false;
-    }
-  }
   if(sentenceIndex == 10){
     showContinueBtn = true;
-  }
-  if(score == 11){
-    if(sentenceIndex < 11){
-      sentenceIndex = 11;
-      curSentence = sentences[sentenceIndex];
-      showContinueBtn = false;
-    }
-  }
-  if(score == 12){
-    showWeedMan = false;
   }
   if(sentenceIndex >= 15 && !bought){
     showArrow = true;
@@ -214,9 +221,6 @@ void drawCastle(){
     curSentence = sentences[sentenceIndex];
     showContinueBtn = true;
   }
-  /*if(!showWeedMan){
-    showContinueBtn = false;
-  }*/
   toStretch *= 0.9;
   imageMode(CENTER);
   image(curImg,W_W/2,W_H/2,CASTLE_SIZE+toStretch,CASTLE_SIZE);
@@ -285,7 +289,7 @@ void drawText(){
 }
 
 void showIntro(){
-  if(startIntro){
+  if(startIntro && !startClicked){
     background(bg);
     weedManStretch += 6;
     float toBob = 100*sin(radians(weedManStretch*-1.5))*0.1;
@@ -345,6 +349,7 @@ void keyPressed(){
     sfx[1].stop();
     sfx[3].play();
     sfx[3].loop();
+    startClicked = true;
   }
   if(key == 'q'){
     drawShop = false;
@@ -412,6 +417,10 @@ void drawShop(){
     }else{
       shopText = "Choose a weapon";
     }
+    fill(0);
+    text("(q to get out btw)",402,20);
+    fill(255);
+    text("(q to get out btw)",400,40);
   }
 }
 
