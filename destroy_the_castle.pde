@@ -32,6 +32,7 @@ boolean pyramidCanBeClicked = false;
 PImage curImg2;
 boolean pyramidDestroyed = false;
 boolean showPyramid = true;
+boolean isPyramid = false;
 
 int score = 0;
 
@@ -106,6 +107,10 @@ PFont font2;
 
 int curLevel = 1;
 
+PImage grad;
+int enlarge = 0;
+boolean mouseOverLevel = false;
+
 void setup(){
   castleImgs = new PImage[CASTLE_IMG_COUNT];
   pyramidImgs = new PImage[PYRAMID_IMG_COUNT];
@@ -117,6 +122,7 @@ void setup(){
   logo = loadImage("logo.png");
   sword = loadImage("items/sword.png");
   textBox = loadImage("box.png");
+  grad = loadImage("grad.png");
   sfx = new SoundFile[soundFileNames.length];
   for(int s = 0; s < soundFileNames.length; s++){
     sfx[s] = new SoundFile(this, soundFileNames[s]);
@@ -159,6 +165,7 @@ void draw(){
   drawHammer();
   drawPointer();
   drawIntroFade();
+  drawLevelSelect();
   if(drawShop){
     drawShop();
   }
@@ -250,6 +257,7 @@ void drawCastle(){
 
 void drawPyramid(){
   if(showPyramid && curLevel == 2){
+    isPyramid = true;
     if(pyramidDestroyed){
       curImg2 = pyramidImgs[3];
     }else{
@@ -551,6 +559,26 @@ void handleLevels(){
     showCastle = false;
     showWeedMan = false;
   }
+}
+
+void drawLevelSelect(){
+  strokeWeight(4);
+  fill(138, 91, 22);
+  stroke(0);
+  rect(639,326,1138,707);
+  image(grad,207,222,212+enlarge,260+enlarge);
+  image(castleImgs[0],207,222,212+enlarge,233+enlarge);
+  enlarge *= 0.9;
+  if(dist(mouseX,mouseY,207,222) < 100){
+    enlarge += 6;
+    mouseOverLevel = true;
+  }else{
+    mouseOverLevel = false;
+  }
+  fill(0);
+  text("Castle",162,400+enlarge);
+  fill(255);
+  text("Castle",160,400+enlarge);
 }
 
 float cosInter(float a, float b, float x) {
