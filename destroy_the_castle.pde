@@ -18,6 +18,20 @@ int toStretch = 0;
 boolean castleCanBeClicked = false;
 PImage curImg;
 boolean castleDestroyed = false;
+boolean showCastle = true;
+
+PImage[] pyramidImgs;
+int PYRAMID_SIZE = 400;
+int PYRAMID_HIT_COUNT_LIM = 20;
+int PYRAMID_IMG_COUNT = 4;
+int pyramidHitCount = 0;
+int thisSS = 0;
+boolean pyramidClicked = false;
+int toStretch2 = 0;
+boolean pyramidCanBeClicked = false;
+PImage curImg2;
+boolean pyramidDestroyed = false;
+boolean showPyramid = true;
 
 int score = 0;
 
@@ -90,8 +104,11 @@ PImage textBox;
 
 PFont font2;
 
+int curLevel = 1;
+
 void setup(){
   castleImgs = new PImage[CASTLE_IMG_COUNT];
+  pyramidImgs = new PImage[PYRAMID_IMG_COUNT];
   font = createFont("OpenSans-Cond.ttf",48);
   font2 = loadFont("Helvetica-96.vlw");
   weed = loadImage("WEEDMAN.png");
@@ -106,6 +123,9 @@ void setup(){
   }
   for(int i = 0; i < CASTLE_IMG_COUNT; i++){
     castleImgs[i] = loadImage("towers/castle/imgs/"+i+".png");
+  }
+  for(int i = 0; i < PYRAMID_IMG_COUNT; i++){
+    pyramidImgs[i] = loadImage("towers/pyramid/"+i+".png");
   }
   for(int i = 0; i < SHOP_IMAGE_COUNT; i++){
     shopImgs[i] = loadImage("anims/shop/"+i+".png");
@@ -130,6 +150,7 @@ void draw(){
   frames++;
   drawBackground();
   drawCastle();
+  drawPyramid();
   drawShopKeeper();
   drawText();
   showIntro();
@@ -141,89 +162,120 @@ void draw(){
   if(drawShop){
     drawShop();
   }
-  drawDemoScreen();
   println("FPS: "+int(frameRate));
 }
 
 void drawCastle(){
-  switch(score){
-    case 1:
-      if(sentenceIndex < 7){
-        sentenceIndex = 7;
-        curSentence = sentences[sentenceIndex];
-    }
-    break;
-    
-    case 2:
-      if(sentenceIndex < 8){
-        sentenceIndex = 8;
-        curSentence = sentences[sentenceIndex];
-    }
-    break;
-    
-    case 3:
-      if(sentenceIndex < 9){
-        sentenceIndex = 9;
-        curSentence = sentences[sentenceIndex];
-        showContinueBtn = false;
-    }
-    break;
-    
-    case 11:
-      if(sentenceIndex < 11){
-        sentenceIndex = 11;
-        curSentence = sentences[sentenceIndex];
-        showContinueBtn = false;
-    }
-    break;
-    
-    case 12:
-      showWeedMan = false;
+  if(showCastle && curLevel == 1){
+    switch(score){
+      case 1:
+        if(sentenceIndex < 7){
+          sentenceIndex = 7;
+          curSentence = sentences[sentenceIndex];
+      }
       break;
-  }
-  if(castleDestroyed){
-    curImg = castleImgs[3];
-  }else{
-    curImg = castleImgs[0];
-    if(score >= CASTLE_HIT_COUNT_LIM){
-      curImg = castleImgs[1];
-      if(sentenceIndex < 10){
-        sentenceIndex = 10;
-        curSentence = sentences[sentenceIndex];
+      
+      case 2:
+        if(sentenceIndex < 8){
+          sentenceIndex = 8;
+          curSentence = sentences[sentenceIndex];
       }
+      break;
+      
+      case 3:
+        if(sentenceIndex < 9){
+          sentenceIndex = 9;
+          curSentence = sentences[sentenceIndex];
+          showContinueBtn = false;
+      }
+      break;
+      
+      case 11:
+        if(sentenceIndex < 11){
+          sentenceIndex = 11;
+          curSentence = sentences[sentenceIndex];
+          showContinueBtn = false;
+      }
+      break;
+      
+      case 12:
+        showWeedMan = false;
+        break;
     }
-    if(score >= CASTLE_HIT_COUNT_LIM+10){
-      curImg = castleImgs[2];
-    }
-    if(score >= CASTLE_HIT_COUNT_LIM+20){
+    if(castleDestroyed){
       curImg = castleImgs[3];
-      castleDestroyed = true;
-      castleCanBeClicked = false;
-      if(sentenceIndex <= 12){
-        sentenceIndex = 12;
-        curSentence = sentences[sentenceIndex];
+    }else{
+      curImg = castleImgs[0];
+      if(score >= CASTLE_HIT_COUNT_LIM){
+        curImg = castleImgs[1];
+        if(sentenceIndex < 10){
+          sentenceIndex = 10;
+          curSentence = sentences[sentenceIndex];
+        }
       }
-      showContinueBtn = true;
-      showWeedMan = true;
+      if(score >= CASTLE_HIT_COUNT_LIM+10){
+        curImg = castleImgs[2];
+      }
+      if(score >= CASTLE_HIT_COUNT_LIM+20){
+        curImg = castleImgs[3];
+        castleDestroyed = true;
+        castleCanBeClicked = false;
+        if(sentenceIndex <= 12){
+          sentenceIndex = 12;
+          curSentence = sentences[sentenceIndex];
+        }
+        showContinueBtn = true;
+        showWeedMan = true;
+      }
     }
+    if(sentenceIndex == 10){
+      showContinueBtn = true;
+    }
+    if(sentenceIndex >= 15 && !bought){
+      showArrow = true;
+      showContinueBtn = false;
+    }
+    if(bought && sentenceIndex < 17){
+      showArrow = false;
+      score = 0;
+      sentenceIndex = 16;
+      curSentence = sentences[sentenceIndex];
+      showContinueBtn = true;
+    }
+    toStretch *= 0.9;
+    imageMode(CENTER);
+    image(curImg,W_W/2,W_H/2,CASTLE_SIZE+toStretch,CASTLE_SIZE);
   }
-  if(sentenceIndex == 10){
-    showContinueBtn = true;
+}
+
+void drawPyramid(){
+  if(showPyramid && curLevel == 2){
+    if(pyramidDestroyed){
+      curImg2 = pyramidImgs[3];
+    }else{
+      curImg2 = pyramidImgs[0];
+      if(score >= PYRAMID_HIT_COUNT_LIM){
+        curImg2 = pyramidImgs[1];
+      }
+      if(score >= PYRAMID_HIT_COUNT_LIM+10){
+        curImg2 = pyramidImgs[2];
+      }
+      if(score >= PYRAMID_HIT_COUNT_LIM+20){
+        curImg2 = pyramidImgs[3];
+        pyramidDestroyed = true;
+        pyramidCanBeClicked = false;
+        showContinueBtn = false;
+        showWeedMan = false;
+      }
+    }
+    if(score >= 1 && curLevel == 2){
+      showWeedMan = false;
+      showContinueBtn = false;
+    }
+    toStretch2 *= 0.9;
+    imageMode(CENTER);
+    image(curImg2,W_W/2,W_H/2,PYRAMID_SIZE+toStretch2,PYRAMID_SIZE);
   }
-  if(sentenceIndex >= 15 && !bought){
-    showArrow = true;
-    showContinueBtn = false;
-  }
-  if(bought && sentenceIndex < 17){
-    showArrow = false;
-    score = 0;
-    sentenceIndex = 16;
-    curSentence = sentences[sentenceIndex];
-    showContinueBtn = true;
-  }
-  toStretch *= 0.9;
-  imageMode(CENTER);
-  image(curImg,W_W/2,W_H/2,CASTLE_SIZE+toStretch,CASTLE_SIZE);
 }
 
 void drawBackground(){
@@ -283,9 +335,6 @@ void drawText(){
     fill(255);
     text("Space to continue",1000,670);
   }
-  /*if(showWeedMan){
-    showContinueBtn = true;
-  }*/
 }
 
 void showIntro(){
@@ -323,6 +372,17 @@ void mousePressed(){
        score += 1;
     }
   }
+  if(pyramidCanBeClicked){
+    if(dist(mouseX,mouseY,W_W/2,W_H/2) < 100){
+       pyramidClicked = true;
+       toStretch2 += 35;
+       println("Clicked");
+       sfx[0].play();
+       hitCount += 1;
+       score += 1;
+       pyramidHitCount += 1;
+    }
+  }
   if(dist(mouseX,mouseY,1200,100) < 100){
     drawShop = true;
     drawShop();
@@ -339,6 +399,7 @@ void mousePressed(){
 void mouseReleased(){
   weedManClicked = false;
   castleClicked = false;
+  pyramidClicked = false;
 }
 
 void keyPressed(){
@@ -356,7 +417,8 @@ void keyPressed(){
     sfx[2].stop();
   }
   if(key == ' ' && sentenceIndex == 16){
-    showDemoScreen = true;
+    curLevel = 2;
+    drawShop = false;
   }
 }
 
@@ -428,6 +490,9 @@ void drawHammer(){
   if(bought){
     isHammer = true;
     image(hammer,mouseX,mouseY);
+    if(curLevel == 2){
+      pyramidCanBeClicked = true;
+    }
   }
 }
 
@@ -478,6 +543,13 @@ void drawDemoScreen(){
     textAlign(CENTER);
     text("Sorry this is the end of the demo TwT",width/2,height/2);
     sfx[3].stop();
+  }
+}
+
+void handleLevels(){
+  if(curLevel != 1){
+    showCastle = false;
+    showWeedMan = false;
   }
 }
 
