@@ -110,6 +110,8 @@ int curLevel = 1;
 PImage grad;
 int enlarge = 0;
 boolean mouseOverLevel = false;
+boolean castleLevClicked = false;
+boolean showSelect = false;
 
 void setup(){
   castleImgs = new PImage[CASTLE_IMG_COUNT];
