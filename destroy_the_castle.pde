@@ -449,6 +449,9 @@ void keyPressed(){
     drawShop = false;
     doneWithIntro = true;
   }
+  if(key == 'l'){
+    showSelect = false;
+  }
 }
 
 void drawSwordIntro(){

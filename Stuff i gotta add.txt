@@ -1,0 +1,2 @@
+Add a locked/unlocked icon on levels
+Add pyramid level on selector
