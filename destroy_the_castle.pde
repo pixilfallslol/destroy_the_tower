@@ -116,6 +116,11 @@ boolean showSelect = false;
 boolean locked = false;
 PImage icoLev;
 
+final int LEVEL_CASTLE = 1;
+final int LEVEL_PYRAMID = 2;
+
+boolean doneWithIntro = false;
+
 void setup(){
   castleImgs = new PImage[CASTLE_IMG_COUNT];
   pyramidImgs = new PImage[PYRAMID_IMG_COUNT];
@@ -232,13 +237,15 @@ void drawCastle(){
       if(score >= CASTLE_HIT_COUNT_LIM+20){
         curImg = castleImgs[3];
         castleDestroyed = true;
-        castleCanBeClicked = false;
-        if(sentenceIndex <= 12){
-          sentenceIndex = 12;
-          curSentence = sentences[sentenceIndex];
+        if(!doneWithIntro){
+          castleCanBeClicked = false;
+          if(sentenceIndex <= 12){
+            sentenceIndex = 12;
+            curSentence = sentences[sentenceIndex];
+          }
+          showContinueBtn = true;
+          showWeedMan = true;
         }
-        showContinueBtn = true;
-        showWeedMan = true;
       }
     }
     if(sentenceIndex == 10){
@@ -376,7 +383,7 @@ void mousePressed(){
       sfx[0].play();
     }
   }
-  if(castleCanBeClicked){
+  if(curLevel == LEVEL_CASTLE && castleCanBeClicked){
     if(dist(mouseX,mouseY,W_W/2,W_H/2) < 100){
        castleClicked = true;
        toStretch += 35;
@@ -386,7 +393,7 @@ void mousePressed(){
        score += 1;
     }
   }
-  if(pyramidCanBeClicked){
+  if(curLevel == LEVEL_PYRAMID && pyramidCanBeClicked){
     if(dist(mouseX,mouseY,W_W/2,W_H/2) < 100){
        pyramidClicked = true;
        toStretch2 += 35;
@@ -404,6 +411,10 @@ void mousePressed(){
   }
   if(dist(mouseX,mouseY,1200,200) < 50){
     showSelect = true;
+  }
+  if(dist(mouseX,mouseY,207,222) < 100){
+    showSelect = false;
+    loadLevel(LEVEL_CASTLE);
   }
   if(dist(mouseX,mouseY,960,170) < 100 && score >= 30){
     println("bought!");
@@ -434,8 +445,9 @@ void keyPressed(){
     sfx[2].stop();
   }
   if(key == ' ' && sentenceIndex == 16){
-    curLevel = 2;
+    loadLevel(LEVEL_PYRAMID);
     drawShop = false;
+    doneWithIntro = true;
   }
 }
 
@@ -457,8 +469,6 @@ void drawSword(){
   if(!bought && sentenceIndex >= 5 && score < CASTLE_HIT_COUNT_LIM+20){
     image(sword,mouseX,mouseY,200,200);
     castleCanBeClicked = true;
-  }else{
-    castleCanBeClicked = false;
   }
 }
 
@@ -507,9 +517,6 @@ void drawHammer(){
   if(bought){
     isHammer = true;
     image(hammer,mouseX,mouseY);
-    if(curLevel == 2){
-      pyramidCanBeClicked = true;
-    }
   }
 }
 
@@ -596,6 +603,22 @@ void drawLevelSelect(){
     text("Level Select",602,100);
     fill(255);
     text("Level Select",600,100);
+  }
+}
+
+void loadLevel(int level){
+  curLevel = level;
+  score = 0;
+  hitCount = 0;
+  pyramidHitCount = 0;
+  castleDestroyed = false;
+  pyramidDestroyed = false;
+  if(level == LEVEL_CASTLE){
+    castleCanBeClicked = true;
+    pyramidCanBeClicked = false;
+  }else if(level == LEVEL_PYRAMID){
+    castleCanBeClicked = false;
+    pyramidCanBeClicked = bought;
   }
 }
 
