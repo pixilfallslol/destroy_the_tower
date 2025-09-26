@@ -1,3 +1,4 @@
+
 import processing.sound.*;
 
 SoundFile[] sfx;
@@ -112,6 +113,8 @@ int enlarge = 0;
 boolean mouseOverLevel = false;
 boolean castleLevClicked = false;
 boolean showSelect = false;
+boolean locked = false;
+PImage icoLev;
 
 void setup(){
   castleImgs = new PImage[CASTLE_IMG_COUNT];
@@ -125,6 +128,7 @@ void setup(){
   sword = loadImage("items/sword.png");
   textBox = loadImage("box.png");
   grad = loadImage("grad.png");
+  icoLev = loadImage("icolevel.png");
   sfx = new SoundFile[soundFileNames.length];
   for(int s = 0; s < soundFileNames.length; s++){
     sfx[s] = new SoundFile(this, soundFileNames[s]);
@@ -149,7 +153,7 @@ void setup(){
   arrow.resize(100,100);
   fade = createGraphics(width,height);
   handleMusic();
-  frameRate(60);
+  frameRate(9999);
   size(1280,720);
 }
 
@@ -159,6 +163,7 @@ void draw(){
   drawBackground();
   drawCastle();
   drawPyramid();
+  drawLevelSelect();
   drawShopKeeper();
   drawText();
   showIntro();
@@ -167,7 +172,6 @@ void draw(){
   drawHammer();
   drawPointer();
   drawIntroFade();
-  drawLevelSelect();
   if(drawShop){
     drawShop();
   }
@@ -393,10 +397,13 @@ void mousePressed(){
        pyramidHitCount += 1;
     }
   }
-  if(dist(mouseX,mouseY,1200,100) < 100){
+  if(dist(mouseX,mouseY,1200,100) < 50){
     drawShop = true;
     drawShop();
     println("Clicked");
+  }
+  if(dist(mouseX,mouseY,1200,200) < 50){
+    showSelect = true;
   }
   if(dist(mouseX,mouseY,960,170) < 100 && score >= 30){
     println("bought!");
@@ -564,23 +571,32 @@ void handleLevels(){
 }
 
 void drawLevelSelect(){
-  strokeWeight(4);
-  fill(138, 91, 22);
-  stroke(0);
-  rect(639,326,1138,707);
-  image(grad,207,222,212+enlarge,260+enlarge);
-  image(castleImgs[0],207,222,212+enlarge,233+enlarge);
-  enlarge *= 0.9;
-  if(dist(mouseX,mouseY,207,222) < 100){
-    enlarge += 6;
-    mouseOverLevel = true;
-  }else{
-    mouseOverLevel = false;
+  if(!startIntro){
+    image(icoLev,1200,200,100,100);
   }
-  fill(0);
-  text("Castle",162,400+enlarge);
-  fill(255);
-  text("Castle",160,400+enlarge);
+  if(showSelect){
+    strokeWeight(4);
+    fill(138, 91, 22);
+    stroke(0);
+    rect(width/2,height/2,1138,707);
+    image(grad,207,222,212+enlarge,260+enlarge);
+    image(castleImgs[0],207,222,212+enlarge,233+enlarge);
+    enlarge *= 0.9;
+    if(dist(mouseX,mouseY,207,222) < 100){
+      enlarge += 6;
+      mouseOverLevel = true;
+    }else{
+      mouseOverLevel = false;
+    }
+    fill(0);
+    text("Castle",162,400+enlarge);
+    fill(255);
+    text("Castle",160,400+enlarge);
+    fill(0);
+    text("Level Select",602,100);
+    fill(255);
+    text("Level Select",600,100);
+  }
 }
 
 float cosInter(float a, float b, float x) {
