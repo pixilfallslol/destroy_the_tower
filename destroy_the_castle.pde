@@ -1,4 +1,3 @@
-
 import processing.sound.*;
 
 SoundFile[] sfx;
