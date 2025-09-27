@@ -47,6 +47,7 @@ int xStretch = 0;
 int SHOP_IMAGE_COUNT = 4;
 PImage[] shopImgs = new PImage[SHOP_IMAGE_COUNT];
 int SPEED = 3; // higher = slower
+int m = 0;
 
 int frames = 0;
 
@@ -112,6 +113,13 @@ int enlarge = 0;
 boolean mouseOverLevel = false;
 boolean castleLevClicked = false;
 boolean showSelect = false;
+boolean locked = false;
+PImage icoLev;
+
+final int LEVEL_CASTLE = 1;
+final int LEVEL_PYRAMID = 2;
+
+boolean doneWithIntro = false;
 
 void setup(){
   castleImgs = new PImage[CASTLE_IMG_COUNT];
@@ -125,6 +133,7 @@ void setup(){
   sword = loadImage("items/sword.png");
   textBox = loadImage("box.png");
   grad = loadImage("grad.png");
+  icoLev = loadImage("icolevel.png");
   sfx = new SoundFile[soundFileNames.length];
   for(int s = 0; s < soundFileNames.length; s++){
     sfx[s] = new SoundFile(this, soundFileNames[s]);
@@ -149,7 +158,7 @@ void setup(){
   arrow.resize(100,100);
   fade = createGraphics(width,height);
   handleMusic();
-  frameRate(60);
+  frameRate(9999);
   size(1280,720);
 }
 
@@ -163,11 +172,11 @@ void draw(){
   drawText();
   showIntro();
   drawSwordIntro();
+  drawLevelSelect();
   drawSword();
   drawHammer();
   drawPointer();
   drawIntroFade();
-  drawLevelSelect();
   if(drawShop){
     drawShop();
   }
@@ -228,13 +237,15 @@ void drawCastle(){
       if(score >= CASTLE_HIT_COUNT_LIM+20){
         curImg = castleImgs[3];
         castleDestroyed = true;
-        castleCanBeClicked = false;
-        if(sentenceIndex <= 12){
-          sentenceIndex = 12;
-          curSentence = sentences[sentenceIndex];
+        if(!doneWithIntro){
+          castleCanBeClicked = false;
+          if(sentenceIndex <= 12){
+            sentenceIndex = 12;
+            curSentence = sentences[sentenceIndex];
+          }
+          showContinueBtn = true;
+          showWeedMan = true;
         }
-        showContinueBtn = true;
-        showWeedMan = true;
       }
     }
     if(sentenceIndex == 10){
@@ -303,9 +314,8 @@ void drawBackground(){
 
 void drawShopKeeper(){
   if(showWeedMan){
-    weedManStretch += 6;
-    float toBob = sin(frameCount * 0.05) * 6;
-    image(weed,200,580+toBob,550+toBob,450);
+    m *= 0.9;
+    image(weed,200,580+m,550,450);
   }
 }
 
@@ -313,18 +323,14 @@ void drawText(){
   if(showWeedMan){
     textFont(font);
     fill(0);
-  
     int boxX = 530;
     int boxY = 670;
     int MARGIN = 40;
-  
     float textW = textWidth(curSentence);
     boxW = int(textW+MARGIN*2);
-  
     rectMode(CENTER);
     fill(0);
     rect(boxX,boxY,boxW,100);
-  
     fill(255);
     textAlign(LEFT,CENTER);
     text(characs[0],boxX-boxW/2+20+MARGIN,boxY-70);
@@ -337,6 +343,9 @@ void drawText(){
       }
     }else{
       nextSentece = false;
+    }
+    if(nextSentece){
+      m += 6;
     }
   }
   if(showContinueBtn){
@@ -372,7 +381,7 @@ void mousePressed(){
       sfx[0].play();
     }
   }
-  if(castleCanBeClicked){
+  if(curLevel == LEVEL_CASTLE && castleCanBeClicked){
     if(dist(mouseX,mouseY,W_W/2,W_H/2) < 100){
        castleClicked = true;
        toStretch += 35;
@@ -382,7 +391,7 @@ void mousePressed(){
        score += 1;
     }
   }
-  if(pyramidCanBeClicked){
+  if(curLevel == LEVEL_PYRAMID && pyramidCanBeClicked){
     if(dist(mouseX,mouseY,W_W/2,W_H/2) < 100){
        pyramidClicked = true;
        toStretch2 += 35;
@@ -393,10 +402,17 @@ void mousePressed(){
        pyramidHitCount += 1;
     }
   }
-  if(dist(mouseX,mouseY,1200,100) < 100){
+  if(dist(mouseX,mouseY,1200,100) < 50){
     drawShop = true;
     drawShop();
     println("Clicked");
+  }
+  if(dist(mouseX,mouseY,1200,200) < 50){
+    showSelect = true;
+  }
+  if(dist(mouseX,mouseY,207,222) < 100){
+    showSelect = false;
+    loadLevel(LEVEL_CASTLE);
   }
   if(dist(mouseX,mouseY,960,170) < 100 && score >= 30){
     println("bought!");
@@ -427,8 +443,12 @@ void keyPressed(){
     sfx[2].stop();
   }
   if(key == ' ' && sentenceIndex == 16){
-    curLevel = 2;
+    loadLevel(LEVEL_PYRAMID);
     drawShop = false;
+    doneWithIntro = true;
+  }
+  if(key == 'l'){
+    showSelect = false;
   }
 }
 
@@ -450,8 +470,6 @@ void drawSword(){
   if(!bought && sentenceIndex >= 5 && score < CASTLE_HIT_COUNT_LIM+20){
     image(sword,mouseX,mouseY,200,200);
     castleCanBeClicked = true;
-  }else{
-    castleCanBeClicked = false;
   }
 }
 
@@ -500,9 +518,6 @@ void drawHammer(){
   if(bought){
     isHammer = true;
     image(hammer,mouseX,mouseY);
-    if(curLevel == 2){
-      pyramidCanBeClicked = true;
-    }
   }
 }
 
@@ -534,6 +549,7 @@ void startFade(){
 void handleMusic(){
   if(startIntro){
     sfx[1].play();
+    sfx[1].loop();
   }else{
     sfx[1].stop();
   }
@@ -564,23 +580,48 @@ void handleLevels(){
 }
 
 void drawLevelSelect(){
-  strokeWeight(4);
-  fill(138, 91, 22);
-  stroke(0);
-  rect(639,326,1138,707);
-  image(grad,207,222,212+enlarge,260+enlarge);
-  image(castleImgs[0],207,222,212+enlarge,233+enlarge);
-  enlarge *= 0.9;
-  if(dist(mouseX,mouseY,207,222) < 100){
-    enlarge += 6;
-    mouseOverLevel = true;
-  }else{
-    mouseOverLevel = false;
+  if(!startIntro){
+    image(icoLev,1200,200,100,90);
   }
-  fill(0);
-  text("Castle",162,400+enlarge);
-  fill(255);
-  text("Castle",160,400+enlarge);
+  if(showSelect){
+    strokeWeight(4);
+    fill(138, 91, 22);
+    stroke(0);
+    rect(width/2,height/2,1138,707);
+    image(grad,207,222,212+enlarge,260+enlarge);
+    image(castleImgs[0],207,222,212+enlarge,233+enlarge);
+    enlarge *= 0.9;
+    if(dist(mouseX,mouseY,207,222) < 100){
+      enlarge += 6;
+      mouseOverLevel = true;
+    }else{
+      mouseOverLevel = false;
+    }
+    fill(0);
+    text("Castle",162,400+enlarge);
+    fill(255);
+    text("Castle",160,400+enlarge);
+    fill(0);
+    text("Level Select",602,100);
+    fill(255);
+    text("Level Select",600,100);
+  }
+}
+
+void loadLevel(int level){
+  curLevel = level;
+  score = 0;
+  hitCount = 0;
+  pyramidHitCount = 0;
+  castleDestroyed = false;
+  pyramidDestroyed = false;
+  if(level == LEVEL_CASTLE){
+    castleCanBeClicked = true;
+    pyramidCanBeClicked = false;
+  }else if(level == LEVEL_PYRAMID){
+    castleCanBeClicked = false;
+    pyramidCanBeClicked = bought;
+  }
 }
 
 float cosInter(float a, float b, float x) {
