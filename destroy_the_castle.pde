@@ -121,14 +121,21 @@ final int LEVEL_PYRAMID = 2;
 
 boolean doneWithIntro = false;
 
+PImage play;
+
+String[] funFacts = {"did u know this game was made in a week","do u like the game?","subscribe to pixilfalls"};
+
+String currentFact;
+
 void setup(){
   castleImgs = new PImage[CASTLE_IMG_COUNT];
   pyramidImgs = new PImage[PYRAMID_IMG_COUNT];
+  play = loadImage("play.png");
   font = createFont("OpenSans-Cond.ttf",48);
   font2 = loadFont("Helvetica-96.vlw");
   weed = loadImage("WEEDMAN.png");
   bg = loadImage("bg.png");
-  bg.resize(1280,720);
+  bg.resize(1500,1080);
   logo = loadImage("logo.png");
   sword = loadImage("items/sword.png");
   textBox = loadImage("box.png");
@@ -168,6 +175,7 @@ void draw(){
   drawBackground();
   drawCastle();
   drawPyramid();
+  drawLevelSelect();
   drawShopKeeper();
   drawText();
   showIntro();
@@ -358,17 +366,23 @@ void drawText(){
 
 void showIntro(){
   if(startIntro && !startClicked){
-    background(bg);
+    float toBob = sin(frameCount * 0.05) * 0.1;
     weedManStretch += 6;
-    float toBob = 100*sin(radians(weedManStretch*-1.5))*0.1;
-    float goTo = cosInter(1000,570,frames/frameRate);
-    image(weed,200,goTo+toBob,550+toBob+xStretch,450);
+    float toBob2 = 100*sin(radians(weedManStretch*-1.5))*0.1;
     xStretch *= 0.9;
-    image(logo,800,cosInter(0,200,frames/frameRate),350+toBob,350+toBob);
-    fill(0);
-    text("Press a to play lol",cosInter(1000,702,frames/frameRate),700+toBob);
+    image(bg,width/2,height/2);
+    pushMatrix();
+    translate(width/2,200);
+    rotate(toBob);
+    imageMode(CENTER);
+    image(logo,0,0,350+toBob2,350+toBob2);
+    popMatrix();
+    image(play,width/2,500,300+xStretch,200+xStretch);
+    if(dist(mouseX,mouseY,width/2,500) < 100){
+      xStretch += 6;
+    }
     fill(255);
-    text("Press a to play lol",cosInter(1000,700,frames/frameRate),700+toBob);
+    text(funFacts[int(random(funFacts.length))],width/2,height/2);
   }
 }
 
@@ -420,6 +434,15 @@ void mousePressed(){
   }else{
     println("gotta get more bud");
   }
+  if(dist(mouseX,mouseY,width/2,500) < 100 && startIntro && !startClicked){
+    startIntro = false;
+    showWeedMan = true;
+    canBeClicked = false;
+    sfx[1].stop();
+    sfx[3].play();
+    sfx[3].loop();
+    startClicked = true;
+  }
 }
 
 void mouseReleased(){
@@ -429,15 +452,6 @@ void mouseReleased(){
 }
 
 void keyPressed(){
-  if(key == 'a'){
-    startIntro = false;
-    showWeedMan = true;
-    canBeClicked = false;
-    sfx[1].stop();
-    sfx[3].play();
-    sfx[3].loop();
-    startClicked = true;
-  }
   if(key == 'q'){
     drawShop = false;
     sfx[2].stop();
@@ -582,6 +596,7 @@ void handleLevels(){
 void drawLevelSelect(){
   if(!startIntro){
     image(icoLev,1200,200,100,90);
+    image(icoLev,1200,200,100,100);
   }
   if(showSelect){
     strokeWeight(4);
