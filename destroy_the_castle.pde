@@ -35,6 +35,7 @@ boolean showPyramid = true;
 boolean isPyramid = false;
 
 int score = 0;
+int scoreD = 0;
 
 PFont font;
 
@@ -127,6 +128,8 @@ String[] funFacts = {"did u know this game was made in a week","do u like the ga
 
 String currentFact;
 
+boolean canContinue = true;
+
 void setup(){
   castleImgs = new PImage[CASTLE_IMG_COUNT];
   pyramidImgs = new PImage[PYRAMID_IMG_COUNT];
@@ -165,6 +168,7 @@ void setup(){
   arrow.resize(100,100);
   fade = createGraphics(width,height);
   handleMusic();
+  currentFact = funFacts[int(random(funFacts.length))];
   frameRate(9999);
   size(1280,720);
 }
@@ -270,6 +274,11 @@ void drawCastle(){
       curSentence = sentences[sentenceIndex];
       showContinueBtn = true;
     }
+    if(sentenceIndex == 6 || sentenceIndex == 7){
+      showContinueBtn = false;
+    }else{
+      showContinueBtn = true;
+    }
     toStretch *= 0.9;
     imageMode(CENTER);
     image(curImg,W_W/2,W_H/2,CASTLE_SIZE+toStretch,CASTLE_SIZE);
@@ -292,7 +301,6 @@ void drawPyramid(){
       if(score >= PYRAMID_HIT_COUNT_LIM+20){
         curImg2 = pyramidImgs[3];
         pyramidDestroyed = true;
-        pyramidCanBeClicked = false;
         showContinueBtn = false;
         showWeedMan = false;
       }
@@ -314,9 +322,10 @@ void drawBackground(){
   fill(50, 168, 82);
   rect(W_W/2,W_H+150,W_W,W_H);
   fill(0);
-  text("Score: "+score,22,100);
+  scoreD *= 0.9;
+  text("Score: "+score,22,100+scoreD);
   fill(255);
-  text("Score: "+score,20,100);
+  text("Score: "+score,20,100+scoreD);
   image(shopIcon,1200,100,100,90);
 }
 
@@ -343,7 +352,7 @@ void drawText(){
     textAlign(LEFT,CENTER);
     text(characs[0],boxX-boxW/2+20+MARGIN,boxY-70);
     text(curSentence,boxX-boxW/2+MARGIN,boxY-5);
-    if(keyPressed && key == ' '){
+    if(keyPressed && key == ' ' && canContinue){
       if(!nextSentece){
         sentenceIndex = (sentenceIndex+1)%sentences.length;
         curSentence = sentences[sentenceIndex];
@@ -356,11 +365,19 @@ void drawText(){
       m += 6;
     }
   }
-  if(showContinueBtn){
+  if(showContinueBtn && canContinue){
     fill(0);
     text("Space to continue",1002,670);
     fill(255);
     text("Space to continue",1000,670);
+  }
+  if(sentenceIndex == 6 || sentenceIndex == 7 || sentenceIndex == 9 || sentenceIndex == 15 || sentenceIndex == 17){
+    canContinue = false;
+  }else{
+    canContinue = true;
+  }
+  if(sentenceIndex == 11){
+    canContinue = false;
   }
 }
 
@@ -369,6 +386,7 @@ void showIntro(){
     float toBob = sin(frameCount * 0.05) * 0.1;
     weedManStretch += 6;
     float toBob2 = 100*sin(radians(weedManStretch*-1.5))*0.1;
+    float toBob3 = 40*sin(radians(weedManStretch*-1.5))*0.1;
     xStretch *= 0.9;
     image(bg,width/2,height/2);
     pushMatrix();
@@ -381,20 +399,16 @@ void showIntro(){
     if(dist(mouseX,mouseY,width/2,500) < 100){
       xStretch += 6;
     }
+    textAlign(CENTER);
+    textSize(50+toBob3-20);
+    fill(0);
+    text(currentFact,width/2+2,300);
     fill(255);
-    text(funFacts[int(random(funFacts.length))],width/2,height/2);
+    text(currentFact,width/2,300);
   }
 }
 
 void mousePressed(){
-  if(canBeClicked){
-    if(dist(mouseX,mouseY,200,570) < 100){
-      weedManClicked = true;
-      xStretch += 35;
-      println("Clicked");
-      sfx[0].play();
-    }
-  }
   if(curLevel == LEVEL_CASTLE && castleCanBeClicked){
     if(dist(mouseX,mouseY,W_W/2,W_H/2) < 100){
        castleClicked = true;
@@ -403,6 +417,7 @@ void mousePressed(){
        sfx[0].play();
        hitCount += 1;
        score += 1;
+       scoreD += 6;
     }
   }
   if(curLevel == LEVEL_PYRAMID && pyramidCanBeClicked){
@@ -413,6 +428,7 @@ void mousePressed(){
        sfx[0].play();
        hitCount += 1;
        score += 1;
+       scoreD += 6;
        pyramidHitCount += 1;
     }
   }
@@ -484,6 +500,11 @@ void drawSword(){
   if(!bought && sentenceIndex >= 5 && score < CASTLE_HIT_COUNT_LIM+20){
     image(sword,mouseX,mouseY,200,200);
     castleCanBeClicked = true;
+    if(sentenceIndex == 8){
+      castleCanBeClicked = false;
+     }else{
+      castleCanBeClicked = true;
+    }
   }
 }
 
