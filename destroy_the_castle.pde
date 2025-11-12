@@ -15,10 +15,12 @@ int CASTLE_IMG_COUNT = 4;
 int thisS = 0;
 boolean castleClicked = false;
 int toStretch = 0;
+int toStretchY = 0;
 boolean castleCanBeClicked = false;
 PImage curImg;
 boolean castleDestroyed = false;
 boolean showCastle = true;
+float idleS = 0;
 
 PImage[] pyramidImgs;
 int PYRAMID_SIZE = 400;
@@ -49,6 +51,9 @@ int SHOP_IMAGE_COUNT = 4;
 PImage[] shopImgs = new PImage[SHOP_IMAGE_COUNT];
 int SPEED = 3; // higher = slower
 int m = 0;
+PImage[] emotionImgs;
+int EMOTION_IMG_COUNT = 4;
+int uS = 0;
 
 int frames = 0;
 
@@ -73,6 +78,9 @@ String[] soundFileNames = {"squeak.mp3","date.mp3","shop.mp3","Anticipation.mp3"
 
 PImage sword;
 float swordAnimProgress = 0;
+PImage hammer;
+boolean isHammer = true;
+int weaponDmg = 10;
 
 boolean showContinueBtn = true;
 
@@ -84,9 +92,6 @@ String shopText = "Choose a weapon";
 
 boolean showArrow = false;
 PImage arrow;
-
-PImage hammer;
-boolean isHammer = true;
 
 PGraphics fade;
 boolean showFade = false;
@@ -113,6 +118,9 @@ PImage grad;
 int enlarge = 0;
 boolean mouseOverLevel = false;
 boolean castleLevClicked = false;
+int enlarge2 = 0;
+boolean mouseOverLevel2 = false;
+boolean pyramidLevClicked = false;
 boolean showSelect = false;
 boolean locked = false;
 PImage icoLev;
@@ -130,9 +138,20 @@ String currentFact;
 
 boolean canContinue = true;
 
+int counter = 0;
+
+boolean bossMode = false;
+
+int scoreMult = 0;
+boolean showUpgradesBtn = false;
+PImage uIco;
+boolean showUpgradesScreen = false;
+int count = 0;
+
 void setup(){
   castleImgs = new PImage[CASTLE_IMG_COUNT];
   pyramidImgs = new PImage[PYRAMID_IMG_COUNT];
+  emotionImgs = new PImage[EMOTION_IMG_COUNT];
   play = loadImage("play.png");
   font = createFont("OpenSans-Cond.ttf",48);
   font2 = loadFont("Helvetica-96.vlw");
@@ -158,11 +177,15 @@ void setup(){
     shopImgs[i] = loadImage("anims/shop/"+i+".png");
     shopImgs[i].resize(400,450);
   }
+  for(int i = 0; i < EMOTION_IMG_COUNT; i++){
+    emotionImgs[i] = loadImage("emotions/"+i+".png");
+  }
   shopIcon = loadImage("shopico.png");
   shopBg = loadImage("aleey.jpg");
   hammer = loadImage("items/hammer.png");
   arrow = loadImage("arrow.png");
   loading = loadImage("hight.png");
+  uIco = loadImage("upgrades.png");
   hammer.resize(100,100);
   shopBg.resize(1280,720);
   arrow.resize(100,100);
@@ -180,11 +203,11 @@ void draw(){
   drawCastle();
   drawPyramid();
   drawLevelSelect();
+  drawUpgradesScreen();
   drawShopKeeper();
   drawText();
   showIntro();
   drawSwordIntro();
-  drawLevelSelect();
   drawSword();
   drawHammer();
   drawPointer();
@@ -243,10 +266,10 @@ void drawCastle(){
           curSentence = sentences[sentenceIndex];
         }
       }
-      if(score >= CASTLE_HIT_COUNT_LIM+10){
+      if(score >= weaponDmg+10){
         curImg = castleImgs[2];
       }
-      if(score >= CASTLE_HIT_COUNT_LIM+20){
+      if(score >= weaponDmg+20){
         curImg = castleImgs[3];
         castleDestroyed = true;
         if(!doneWithIntro){
@@ -280,8 +303,10 @@ void drawCastle(){
       showContinueBtn = true;
     }
     toStretch *= 0.9;
+    toStretchY *= 0.9;
+    idleS = sin(frameCount * 0.05) * 10;
     imageMode(CENTER);
-    image(curImg,W_W/2,W_H/2,CASTLE_SIZE+toStretch,CASTLE_SIZE);
+    image(curImg,W_W/2,W_H/2,idleS+CASTLE_SIZE+toStretch,idleS-CASTLE_SIZE);
   }
 }
 
@@ -292,13 +317,13 @@ void drawPyramid(){
       curImg2 = pyramidImgs[3];
     }else{
       curImg2 = pyramidImgs[0];
-      if(score >= PYRAMID_HIT_COUNT_LIM){
+      if(score >= weaponDmg){
         curImg2 = pyramidImgs[1];
       }
-      if(score >= PYRAMID_HIT_COUNT_LIM+10){
+      if(score >= weaponDmg+10){
         curImg2 = pyramidImgs[2];
       }
-      if(score >= PYRAMID_HIT_COUNT_LIM+20){
+      if(score >= weaponDmg+20){
         curImg2 = pyramidImgs[3];
         pyramidDestroyed = true;
         showContinueBtn = false;
@@ -313,6 +338,10 @@ void drawPyramid(){
     imageMode(CENTER);
     image(curImg2,W_W/2,W_H/2,PYRAMID_SIZE+toStretch2,PYRAMID_SIZE);
   }
+}
+
+void drawCastleBoss(){
+  
 }
 
 void drawBackground(){
@@ -331,14 +360,31 @@ void drawBackground(){
 
 void drawShopKeeper(){
   if(showWeedMan){
-    m *= 0.9;
-    image(weed,200,580+m,550,450);
+    float toBob = sin(frameCount * 0.05) * 6;
+    image(weed,200,580+toBob,toBob+550,450);
   }
 }
 
 void drawText(){
   if(showWeedMan){
     textFont(font);
+    textSize(40);
+    textAlign(CENTER,CENTER);
+    fill(0);
+    float toBob = sin(frameCount * 0.05) * 6;
+    text(characs[0],200,toBob+350);
+    typewriteText(curSentence,1,600,670);
+    if(keyPressed && key == ' ' && canContinue){
+      if(!nextSentece){
+        sentenceIndex = (sentenceIndex+1)%sentences.length;
+        curSentence = sentences[sentenceIndex];
+        nextSentece = true;
+        counter = 0;
+      }
+    }else{
+      nextSentece = false;
+    }
+    /*textFont(font);
     fill(0);
     int boxX = 530;
     int boxY = 670;
@@ -360,16 +406,14 @@ void drawText(){
       }
     }else{
       nextSentece = false;
-    }
-    if(nextSentece){
-      m += 6;
-    }
+    }*/
   }
   if(showContinueBtn && canContinue){
+    textAlign(CENTER,CENTER);
     fill(0);
-    text("Space to continue",1002,670);
+    text("Space to continue",1102,690);
     fill(255);
-    text("Space to continue",1000,670);
+    text("Space to continue",1100,690);
   }
   if(sentenceIndex == 6 || sentenceIndex == 7 || sentenceIndex == 9 || sentenceIndex == 15 || sentenceIndex == 17){
     canContinue = false;
@@ -379,6 +423,18 @@ void drawText(){
   if(sentenceIndex == 11){
     canContinue = false;
   }
+  textAlign(LEFT,CENTER);
+}
+
+void typewriteText(String t, int SPEED, int x, int y){
+  if(frames%SPEED == 0 && counter < t.length()){
+    counter++;
+  }
+  int endIndex = min(counter,t.length());
+  fill(0);
+  text(t.substring(0,endIndex),x+2,y,width,height);
+  fill(255);
+  text(t.substring(0,endIndex),x,y,width,height);
 }
 
 void showIntro(){
@@ -412,23 +468,24 @@ void mousePressed(){
   if(curLevel == LEVEL_CASTLE && castleCanBeClicked){
     if(dist(mouseX,mouseY,W_W/2,W_H/2) < 100){
        castleClicked = true;
-       toStretch += 35;
+       toStretch = 100-(toStretch/3);
+       toStretchY = 100-(toStretchY/3);
        println("Clicked");
        sfx[0].play();
        hitCount += 1;
-       score += 1;
-       scoreD += 6;
+       score += 1+scoreMult;
+       scoreD = 20-(scoreD/3);
     }
   }
   if(curLevel == LEVEL_PYRAMID && pyramidCanBeClicked){
     if(dist(mouseX,mouseY,W_W/2,W_H/2) < 100){
        pyramidClicked = true;
-       toStretch2 += 35;
+       toStretch2 = 100-(toStretch2/3);
        println("Clicked");
        sfx[0].play();
        hitCount += 1;
-       score += 1;
-       scoreD += 6;
+       score += 1+scoreMult;
+       scoreD = 20-(scoreD/3);
        pyramidHitCount += 1;
     }
   }
@@ -440,13 +497,25 @@ void mousePressed(){
   if(dist(mouseX,mouseY,1200,200) < 50){
     showSelect = true;
   }
-  if(dist(mouseX,mouseY,207,222) < 100){
+  if(dist(mouseX,mouseY,207,222) < 50){
     showSelect = false;
     loadLevel(LEVEL_CASTLE);
   }
-  if(dist(mouseX,mouseY,960,170) < 100 && score >= 30){
+  if(dist(mouseX,mouseY,1200,300) < 50){
+    showUpgradesScreen = true;
+  }
+  if(showUpgradesScreen && dist(mouseX,mouseY,width/2-400,height/2+100) < 100){
+    uS = 100-(uS/3);
+    count += 1;
+  }
+  if(dist(mouseX,mouseY,500,222) < 100){
+    showSelect = false;
+    loadLevel(LEVEL_PYRAMID);
+  }
+  if(dist(mouseX,mouseY,960,170) < 100 && score >= 30 && drawShop){
     println("bought!");
     bought = true;
+    weaponDmg = weaponDmg+20;
   }else{
     println("gotta get more bud");
   }
@@ -468,7 +537,7 @@ void mouseReleased(){
 }
 
 void keyPressed(){
-  if(key == 'q'){
+  if(key == 'q' && drawShop){
     drawShop = false;
     sfx[2].stop();
   }
@@ -480,6 +549,12 @@ void keyPressed(){
   if(key == 'l'){
     showSelect = false;
   }
+  if(key == 'q' && showUpgradesScreen){
+    showUpgradesScreen = false;
+  }
+  if(key == 'q' && showSelect){
+    showSelect = false;
+  }
 }
 
 void drawSwordIntro(){
@@ -488,7 +563,7 @@ void drawSwordIntro(){
     swordAnimProgress += 0.01;
     swordAnimProgress = constrain(swordAnimProgress,0,1);
     float x = cosInter(-1,500,swordAnimProgress);
-    thisS += 6;
+    thisS = 100-(thisS/3);
     float toBob = sin(frameCount * 0.05) * 6;
     image(sword,900,x,200+toBob,200+toBob);
   }else{
@@ -626,21 +701,36 @@ void drawLevelSelect(){
     rect(width/2,height/2,1138,707);
     image(grad,207,222,212+enlarge,260+enlarge);
     image(castleImgs[0],207,222,212+enlarge,233+enlarge);
+    image(grad,500,222,212+enlarge2,260+enlarge2);
+    image(pyramidImgs[0],500,222,212+enlarge2,233+enlarge2);
     enlarge *= 0.9;
+    enlarge2 *= 0.9;
     if(dist(mouseX,mouseY,207,222) < 100){
       enlarge += 6;
       mouseOverLevel = true;
     }else{
       mouseOverLevel = false;
     }
+    if(dist(mouseX,mouseY,500,222) < 100){
+      enlarge2 += 6;
+      mouseOverLevel2 = true;
+    }else{
+      mouseOverLevel2 = false;
+    }
     fill(0);
     text("Castle",162,400+enlarge);
     fill(255);
     text("Castle",160,400+enlarge);
+    
     fill(0);
-    text("Level Select",602,100);
+    text("Pyramid",442,400+enlarge2);
     fill(255);
-    text("Level Select",600,100);
+    text("Pyramid",440,400+enlarge2);
+    fill(0);
+    
+    text("Level Select",width/2,60);
+    fill(255);
+    text("Level Select",width/2,60);
   }
 }
 
@@ -658,6 +748,58 @@ void loadLevel(int level){
     castleCanBeClicked = false;
     pyramidCanBeClicked = bought;
   }
+}
+
+void drawUpgradesScreen(){
+  curImg = emotionImgs[0];
+  uS *= 0.9;
+  int theY = height/2+100;
+  float idleS = sin(frameCount * 0.05) * 6;
+  if(curLevel == LEVEL_PYRAMID){
+    showUpgradesBtn = true;
+  }
+  if(showUpgradesBtn){
+    image(uIco,1200,300,100,90);
+  }
+  if(showUpgradesScreen){
+    if(count >= 1){
+      curImg = emotionImgs[1];
+    }
+    if(count >= 2){
+      curImg = emotionImgs[2];
+    }
+    if(count >= 3){
+      curImg = emotionImgs[3];
+    }
+    String t = "Upgrades";
+    image(curImg,width/2-400,theY,uS-500+idleS,uS+530-idleS);
+    float toBob = sin(frameCount * 0.05) * 0.1;
+    fill(0,110);
+    rect(1200,300,1400,1000000);
+    imageMode(CENTER);
+    pushMatrix();
+    fill(255);
+    translate(width/2+300,40);
+    rotate(toBob);
+    textAlign(CENTER,CENTER);
+    text(t,0,0);
+    translate(1050,40);
+    rotate(toBob);
+    textAlign(CENTER,CENTER);
+    text(t,0,0);
+    popMatrix();
+    if(dist(mouseX,mouseY,960,170) < 100){
+      t = "Hammer";
+    }else{
+      t = "Upgrades";
+    }
+    textAlign(CENTER,CENTER);
+    fill(0);
+    text("(q to get out btw)",402,40);
+    fill(255);
+    text("(q to get out btw)",400,40);
+  }
+  textAlign(BASELINE);
 }
 
 float cosInter(float a, float b, float x) {
